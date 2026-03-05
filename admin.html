@@ -1,0 +1,979 @@
+<!DOCTYPE html>
+<html lang="hi">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Admin Panel - Dynamic Question Count</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+        }
+
+        body {
+            background: linear-gradient(135deg, #1e1e2f, #2a2a40);
+            min-height: 100vh;
+            padding: 20px;
+        }
+
+        .container {
+            max-width: 1400px;
+            margin: 0 auto;
+        }
+
+        .header {
+            background: linear-gradient(135deg, #667eea, #764ba2);
+            color: white;
+            padding: 25px;
+            border-radius: 15px 15px 0 0;
+            margin-bottom: 20px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            flex-wrap: wrap;
+            gap: 15px;
+        }
+
+        .header h1 {
+            font-size: 2em;
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+
+        .badge {
+            background: rgba(255,255,255,0.2);
+            padding: 8px 15px;
+            border-radius: 50px;
+            font-size: 0.9em;
+        }
+
+        .admin-grid {
+            display: grid;
+            grid-template-columns: 1fr 2fr;
+            gap: 20px;
+        }
+
+        .left-panel {
+            background: white;
+            border-radius: 15px;
+            padding: 25px;
+            box-shadow: 0 10px 30px rgba(0,0,0,0.2);
+            max-height: 90vh;
+            overflow-y: auto;
+        }
+
+        .section-title {
+            color: #333;
+            margin-bottom: 20px;
+            padding-bottom: 10px;
+            border-bottom: 3px solid #667eea;
+            font-size: 1.3em;
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+
+        .form-group {
+            margin-bottom: 20px;
+        }
+
+        label {
+            display: block;
+            margin-bottom: 8px;
+            font-weight: 600;
+            color: #555;
+        }
+
+        input, select {
+            width: 100%;
+            padding: 12px;
+            border: 2px solid #e0e0e0;
+            border-radius: 8px;
+            font-size: 16px;
+            transition: all 0.3s;
+        }
+
+        input:focus, select:focus {
+            border-color: #667eea;
+            outline: none;
+        }
+
+        .btn {
+            background: linear-gradient(135deg, #667eea, #764ba2);
+            color: white;
+            border: none;
+            padding: 12px 25px;
+            border-radius: 8px;
+            font-size: 16px;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.3s;
+            width: 100%;
+            margin-bottom: 10px;
+        }
+
+        .btn:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 10px 30px rgba(102,126,234,0.4);
+        }
+
+        .btn-secondary {
+            background: linear-gradient(135deg, #f093fb, #f5576c);
+        }
+
+        /* Dynamic Answer Grid */
+        .answer-grid-container {
+            margin: 20px 0;
+            border: 2px solid #f0f0f0;
+            border-radius: 10px;
+            padding: 15px;
+        }
+
+        .answer-grid-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 15px;
+            padding-bottom: 10px;
+            border-bottom: 2px solid #667eea;
+        }
+
+        .answer-grid-header h3 {
+            color: #333;
+        }
+
+        .question-count-badge {
+            background: #667eea;
+            color: white;
+            padding: 5px 15px;
+            border-radius: 50px;
+            font-size: 0.9em;
+        }
+
+        .dynamic-answer-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(80px, 1fr));
+            gap: 10px;
+            max-height: 400px;
+            overflow-y: auto;
+            padding: 10px;
+        }
+
+        .answer-box {
+            background: #f8f9fa;
+            border-radius: 8px;
+            padding: 8px;
+            text-align: center;
+            border: 1px solid #e0e0e0;
+        }
+
+        .answer-box label {
+            font-size: 0.8em;
+            margin-bottom: 3px;
+            color: #666;
+        }
+
+        .answer-box select {
+            width: 100%;
+            padding: 5px;
+            border: 2px solid #e0e0e0;
+            border-radius: 5px;
+            font-size: 14px;
+            font-weight: bold;
+            background: white;
+        }
+
+        .quick-fill-options {
+            display: flex;
+            gap: 10px;
+            margin: 10px 0;
+            flex-wrap: wrap;
+        }
+
+        .quick-fill-btn {
+            flex: 1;
+            padding: 8px;
+            background: #f0f0f0;
+            border: 1px solid #ddd;
+            border-radius: 5px;
+            cursor: pointer;
+            font-size: 14px;
+            text-align: center;
+            transition: all 0.3s;
+            min-width: 60px;
+        }
+
+        .quick-fill-btn:hover {
+            background: #667eea;
+            color: white;
+        }
+
+        .right-panel {
+            background: white;
+            border-radius: 15px;
+            padding: 25px;
+            box-shadow: 0 10px 30px rgba(0,0,0,0.2);
+            max-height: 90vh;
+            overflow-y: auto;
+        }
+
+        .data-tabs {
+            display: flex;
+            gap: 10px;
+            margin-bottom: 20px;
+            border-bottom: 2px solid #f0f0f0;
+            padding-bottom: 10px;
+            flex-wrap: wrap;
+        }
+
+        .tab {
+            padding: 10px 20px;
+            border-radius: 8px 8px 0 0;
+            cursor: pointer;
+            font-weight: 600;
+            color: #666;
+            transition: all 0.3s;
+        }
+
+        .tab.active {
+            color: #667eea;
+            border-bottom: 3px solid #667eea;
+            background: #f8f9fa;
+        }
+
+        .data-card {
+            background: #f8f9fa;
+            border-radius: 10px;
+            padding: 15px;
+            margin-bottom: 15px;
+            border-left: 4px solid #667eea;
+            cursor: pointer;
+            transition: all 0.3s;
+        }
+
+        .data-card:hover {
+            transform: translateX(5px);
+        }
+
+        .data-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 10px;
+            flex-wrap: wrap;
+            gap: 10px;
+        }
+
+        .data-title {
+            font-size: 1.2em;
+            font-weight: bold;
+            color: #333;
+        }
+
+        .set-badge {
+            background: #667eea;
+            color: white;
+            padding: 3px 10px;
+            border-radius: 50px;
+            font-size: 0.8em;
+            margin-right: 5px;
+            display: inline-block;
+        }
+
+        .success-message {
+            background: #d4edda;
+            color: #155724;
+            padding: 12px;
+            border-radius: 8px;
+            margin-bottom: 15px;
+            display: none;
+        }
+
+        .success-message.show {
+            display: block;
+        }
+
+        .modal {
+            display: none;
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: rgba(0,0,0,0.5);
+            z-index: 1000;
+            justify-content: center;
+            align-items: center;
+        }
+
+        .modal.active {
+            display: flex;
+        }
+
+        .modal-content {
+            background: white;
+            padding: 30px;
+            border-radius: 15px;
+            max-width: 900px;
+            width: 90%;
+            max-height: 80vh;
+            overflow-y: auto;
+        }
+
+        .close {
+            float: right;
+            font-size: 28px;
+            font-weight: bold;
+            cursor: pointer;
+            color: #999;
+        }
+
+        .close:hover {
+            color: #333;
+        }
+
+        @media (max-width: 768px) {
+            .admin-grid {
+                grid-template-columns: 1fr;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="header">
+            <h1>
+                👑 Dynamic Admin Panel
+                <span class="badge">Flexible Question Count</span>
+            </h1>
+            <div>
+                <span class="badge" id="liveCount">Total Exams: 0</span>
+            </div>
+        </div>
+
+        <div class="admin-grid">
+            <!-- Left Panel -->
+            <div class="left-panel">
+                <div class="success-message" id="successMessage">
+                    ✅ Data successfully saved!
+                </div>
+
+                <!-- Exam Form -->
+                <div class="section-title">
+                    📝 Add New Exam
+                </div>
+                
+                <div class="form-group">
+                    <label>Exam Name:</label>
+                    <input type="text" id="examName" placeholder="e.g., UPSC Prelims 2024">
+                </div>
+
+                <div class="form-group">
+                    <label>Exam Date:</label>
+                    <input type="date" id="examDate">
+                </div>
+
+                <div class="form-group">
+                    <label>Total Questions:</label>
+                    <input type="number" id="totalQuestions" value="100" min="1" max="500" 
+                           onchange="updateQuestionCount()">
+                    <small style="color: #666;">जितने चाहें उतने questions डाल सकते हैं</small>
+                </div>
+
+                <div class="form-group">
+                    <label>Number of Shifts:</label>
+                    <input type="number" id="totalShifts" value="3" min="1" max="10">
+                </div>
+
+                <button class="btn" onclick="addExam()">➕ Create Exam</button>
+
+                <hr style="margin: 30px 0; border-color: #f0f0f0;">
+
+                <!-- Shift & Set Form -->
+                <div class="section-title">
+                    ⏰ Add Shift & Sets
+                </div>
+
+                <div class="form-group">
+                    <label>Select Exam:</label>
+                    <select id="examSelect" onchange="loadExamDetails()">
+                        <option value="">-- First create an exam --</option>
+                    </select>
+                </div>
+
+                <div class="form-group">
+                    <label>Shift Number:</label>
+                    <select id="shiftNumber">
+                        <option value="1">Shift 1</option>
+                        <option value="2">Shift 2</option>
+                        <option value="3">Shift 3</option>
+                        <option value="4">Shift 4</option>
+                    </select>
+                </div>
+
+                <div class="form-group">
+                    <label>Shift Timing:</label>
+                    <input type="text" id="shiftTime" placeholder="e.g., 9:00 AM - 12:00 PM">
+                </div>
+
+                <div class="form-group">
+                    <label>Number of Sets (1-24):</label>
+                    <input type="number" id="setCount" min="1" max="24" value="4">
+                </div>
+
+                <button class="btn" onclick="addShift()">➕ Add Shift & Generate Sets</button>
+
+                <hr style="margin: 30px 0; border-color: #f0f0f0;">
+
+                <!-- Answer Key Form -->
+                <div class="section-title">
+                    🔑 Add Answer Keys
+                </div>
+
+                <div class="form-group">
+                    <label>Select Exam:</label>
+                    <select id="keyExamSelect" onchange="loadShiftsForKey()">
+                        <option value="">-- Select exam --</option>
+                    </select>
+                </div>
+
+                <div class="form-group">
+                    <label>Select Shift:</label>
+                    <select id="keyShiftSelect" onchange="loadSetsForKey()" disabled>
+                        <option value="">-- First select exam --</option>
+                    </select>
+                </div>
+
+                <div class="form-group">
+                    <label>Select Set:</label>
+                    <select id="keySetSelect" onchange="loadAnswersForSet()" disabled>
+                        <option value="">-- First select shift --</option>
+                    </select>
+                </div>
+
+                <!-- Dynamic Answer Grid -->
+                <div class="answer-grid-container" id="answerGridContainer" style="display: none;">
+                    <div class="answer-grid-header">
+                        <h3>✏️ Answers भरें</h3>
+                        <span class="question-count-badge" id="questionCountDisplay">0 Questions</span>
+                    </div>
+
+                    <div class="quick-fill-options">
+                        <div class="quick-fill-btn" onclick="quickFillAll('A')">सभी A</div>
+                        <div class="quick-fill-btn" onclick="quickFillAll('B')">सभी B</div>
+                        <div class="quick-fill-btn" onclick="quickFillAll('C')">सभी C</div>
+                        <div class="quick-fill-btn" onclick="quickFillAll('D')">सभी D</div>
+                        <div class="quick-fill-btn" onclick="quickFillPattern('ABCD')">ABCD</div>
+                        <div class="quick-fill-btn" onclick="quickFillPattern('ABAB')">ABAB</div>
+                        <div class="quick-fill-btn" onclick="quickFillRandom()">Random</div>
+                        <div class="quick-fill-btn" onclick="clearAllAnswers()">Clear</div>
+                    </div>
+
+                    <div class="dynamic-answer-grid" id="dynamicAnswerGrid">
+                        <!-- Questions will be generated here dynamically -->
+                    </div>
+
+                    <button class="btn" onclick="saveAnswerKey()" style="margin-top: 15px;">
+                        💾 Save Answer Key
+                    </button>
+                </div>
+            </div>
+
+            <!-- Right Panel -->
+            <div class="right-panel">
+                <div class="data-tabs">
+                    <div class="tab active" onclick="switchTab('exams')">📚 Exams</div>
+                    <div class="tab" onclick="switchTab('shifts')">⏰ Shifts</div>
+                    <div class="tab" onclick="switchTab('sets')">📋 Sets</div>
+                    <div class="tab" onclick="switchTab('keys')">🔑 Answer Keys</div>
+                </div>
+
+                <div id="examsTab"></div>
+                <div id="shiftsTab" style="display: none;"></div>
+                <div id="setsTab" style="display: none;"></div>
+                <div id="keysTab" style="display: none;"></div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Modal for Viewing Answers -->
+    <div class="modal" id="answerModal">
+        <div class="modal-content">
+            <span class="close" onclick="closeModal()">&times;</span>
+            <h2 id="modalTitle">Answer Key Details</h2>
+            <div class="dynamic-answer-grid" id="modalAnswers" style="grid-template-columns: repeat(10, 1fr);">
+                <!-- Answers will be shown here -->
+            </div>
+        </div>
+    </div>
+
+    <script>
+        // ==================== DATA STRUCTURE ====================
+        let examData = {
+            exams: [],
+            shifts: [],
+            sets: [],
+            answerKeys: []
+        };
+
+        let currentQuestionCount = 100;
+        let currentExamId = null;
+        let currentShiftId = null;
+        let currentSetId = null;
+
+        // Load data from localStorage
+        function loadData() {
+            const saved = localStorage.getItem('examData');
+            if (saved) {
+                examData = JSON.parse(saved);
+            }
+            updateAllDropdowns();
+            updateUI();
+        }
+
+        // Save data to localStorage
+        function saveData() {
+            localStorage.setItem('examData', JSON.stringify(examData));
+            updateAllDropdowns();
+            updateUI();
+            showSuccess();
+        }
+
+        // Update question count
+        function updateQuestionCount() {
+            currentQuestionCount = parseInt(document.getElementById('totalQuestions').value) || 100;
+        }
+
+        // ==================== EXAM FUNCTIONS ====================
+        function addExam() {
+            const name = document.getElementById('examName').value;
+            const date = document.getElementById('examDate').value;
+            const totalQuestions = parseInt(document.getElementById('totalQuestions').value);
+            const totalShifts = parseInt(document.getElementById('totalShifts').value);
+
+            if (!name || !date) {
+                alert('Please fill all fields');
+                return;
+            }
+
+            const newExam = {
+                id: 'exam_' + Date.now(),
+                name: name,
+                date: date,
+                totalQuestions: totalQuestions,
+                totalShifts: totalShifts
+            };
+
+            examData.exams.push(newExam);
+            saveData();
+
+            // Clear form
+            document.getElementById('examName').value = '';
+            document.getElementById('examDate').value = '';
+        }
+
+        // ==================== SHIFT FUNCTIONS ====================
+        function addShift() {
+            const examId = document.getElementById('examSelect').value;
+            const shiftNumber = parseInt(document.getElementById('shiftNumber').value);
+            const shiftTime = document.getElementById('shiftTime').value;
+            const setCount = parseInt(document.getElementById('setCount').value);
+
+            if (!examId || !shiftTime) {
+                alert('Please fill all fields');
+                return;
+            }
+
+            const exam = examData.exams.find(e => e.id === examId);
+            if (!exam) return;
+
+            const shiftId = 'shift_' + Date.now();
+            const newShift = {
+                id: shiftId,
+                examId: examId,
+                shiftNumber: shiftNumber,
+                time: shiftTime
+            };
+
+            examData.shifts.push(newShift);
+
+            // Generate sets based on exam's total questions
+            for (let i = 0; i < setCount; i++) {
+                const setCode = String.fromCharCode(65 + i);
+                examData.sets.push({
+                    id: `set_${shiftId}_${setCode}`,
+                    shiftId: shiftId,
+                    setCode: setCode,
+                    totalQuestions: exam.totalQuestions
+                });
+            }
+
+            saveData();
+            document.getElementById('shiftTime').value = '';
+        }
+
+        // ==================== ANSWER KEY FUNCTIONS ====================
+        function generateAnswerGrid(questionCount) {
+            const grid = document.getElementById('dynamicAnswerGrid');
+            grid.innerHTML = '';
+            grid.style.gridTemplateColumns = `repeat(${Math.min(8, questionCount)}, 1fr)`;
+            
+            for (let i = 1; i <= questionCount; i++) {
+                const box = document.createElement('div');
+                box.className = 'answer-box';
+                box.innerHTML = `
+                    <label>Q${i}</label>
+                    <select id="ans_${i}" class="answer-dropdown">
+                        <option value="">-</option>
+                        <option value="A">A</option>
+                        <option value="B">B</option>
+                        <option value="C">C</option>
+                        <option value="D">D</option>
+                    </select>
+                `;
+                grid.appendChild(box);
+            }
+
+            document.getElementById('questionCountDisplay').textContent = questionCount + ' Questions';
+        }
+
+        function loadAnswersForSet() {
+            const setId = document.getElementById('keySetSelect').value;
+            if (!setId) return;
+
+            currentSetId = setId;
+            
+            const set = examData.sets.find(s => s.id === setId);
+            const shift = examData.shifts.find(s => s.id === set?.shiftId);
+            const exam = examData.exams.find(e => e.id === shift?.examId);
+            
+            if (exam) {
+                currentQuestionCount = exam.totalQuestions;
+                generateAnswerGrid(currentQuestionCount);
+                document.getElementById('answerGridContainer').style.display = 'block';
+            }
+
+            const answerKey = examData.answerKeys.find(k => k.setId === setId);
+            
+            if (answerKey) {
+                for (let i = 1; i <= currentQuestionCount; i++) {
+                    const select = document.getElementById(`ans_${i}`);
+                    if (select && answerKey.answers[i-1]) {
+                        select.value = answerKey.answers[i-1];
+                    }
+                }
+            } else {
+                // Clear all selections
+                for (let i = 1; i <= currentQuestionCount; i++) {
+                    const select = document.getElementById(`ans_${i}`);
+                    if (select) select.value = '';
+                }
+            }
+        }
+
+        function quickFillAll(option) {
+            for (let i = 1; i <= currentQuestionCount; i++) {
+                const select = document.getElementById(`ans_${i}`);
+                if (select) select.value = option;
+            }
+        }
+
+        function quickFillPattern(pattern) {
+            const patternArray = pattern.split('');
+            for (let i = 1; i <= currentQuestionCount; i++) {
+                const select = document.getElementById(`ans_${i}`);
+                if (select) {
+                    const patternIndex = (i - 1) % patternArray.length;
+                    select.value = patternArray[patternIndex];
+                }
+            }
+        }
+
+        function quickFillRandom() {
+            const options = ['A', 'B', 'C', 'D'];
+            for (let i = 1; i <= currentQuestionCount; i++) {
+                const select = document.getElementById(`ans_${i}`);
+                if (select) {
+                    const randomIndex = Math.floor(Math.random() * 4);
+                    select.value = options[randomIndex];
+                }
+            }
+        }
+
+        function clearAllAnswers() {
+            for (let i = 1; i <= currentQuestionCount; i++) {
+                const select = document.getElementById(`ans_${i}`);
+                if (select) select.value = '';
+            }
+        }
+
+        function saveAnswerKey() {
+            if (!currentSetId) {
+                alert('Please select a set first');
+                return;
+            }
+
+            const answers = [];
+            for (let i = 1; i <= currentQuestionCount; i++) {
+                const select = document.getElementById(`ans_${i}`);
+                answers.push(select.value || '');
+            }
+
+            const emptyCount = answers.filter(a => a === '').length;
+            if (emptyCount > 0) {
+                if (!confirm(`${emptyCount} answers are empty. Save anyway?`)) {
+                    return;
+                }
+            }
+
+            const existingIndex = examData.answerKeys.findIndex(k => k.setId === currentSetId);
+            
+            if (existingIndex >= 0) {
+                examData.answerKeys[existingIndex].answers = answers;
+            } else {
+                examData.answerKeys.push({
+                    id: 'key_' + Date.now(),
+                    setId: currentSetId,
+                    answers: answers
+                });
+            }
+
+            saveData();
+            alert('Answer key saved successfully!');
+        }
+
+        // ==================== DROPDOWN UPDATE FUNCTIONS ====================
+        function updateAllDropdowns() {
+            // Update exam selects
+            const examSelects = ['examSelect', 'keyExamSelect'];
+            examSelects.forEach(selectId => {
+                const select = document.getElementById(selectId);
+                if (select) {
+                    select.innerHTML = '<option value="">-- Select exam --</option>';
+                    examData.exams.forEach(exam => {
+                        select.innerHTML += `<option value="${exam.id}">${exam.name} (${exam.totalQuestions} Q)</option>`;
+                    });
+                }
+            });
+        }
+
+        function loadExamDetails() {
+            const examId = document.getElementById('examSelect').value;
+            if (!examId) return;
+
+            const exam = examData.exams.find(e => e.id === examId);
+            if (exam) {
+                document.getElementById('totalQuestions').value = exam.totalQuestions;
+                currentQuestionCount = exam.totalQuestions;
+            }
+        }
+
+        function loadShiftsForKey() {
+            const examId = document.getElementById('keyExamSelect').value;
+            const shiftSelect = document.getElementById('keyShiftSelect');
+            const setSelect = document.getElementById('keySetSelect');
+            
+            if (!examId) {
+                shiftSelect.disabled = true;
+                setSelect.disabled = true;
+                document.getElementById('answerGridContainer').style.display = 'none';
+                return;
+            }
+
+            shiftSelect.disabled = false;
+            shiftSelect.innerHTML = '<option value="">-- Select shift --</option>';
+            
+            const shifts = examData.shifts.filter(s => s.examId === examId);
+            shifts.sort((a, b) => a.shiftNumber - b.shiftNumber);
+            
+            shifts.forEach(shift => {
+                shiftSelect.innerHTML += `<option value="${shift.id}">Shift ${shift.shiftNumber}</option>`;
+            });
+
+            setSelect.disabled = true;
+            document.getElementById('answerGridContainer').style.display = 'none';
+        }
+
+        function loadSetsForKey() {
+            const shiftId = document.getElementById('keyShiftSelect').value;
+            const setSelect = document.getElementById('keySetSelect');
+            
+            if (!shiftId) {
+                setSelect.disabled = true;
+                document.getElementById('answerGridContainer').style.display = 'none';
+                return;
+            }
+
+            setSelect.disabled = false;
+            setSelect.innerHTML = '<option value="">-- Select set --</option>';
+            
+            const sets = examData.sets.filter(s => s.shiftId === shiftId);
+            sets.sort((a, b) => a.setCode.localeCompare(b.setCode));
+            
+            sets.forEach(set => {
+                setSelect.innerHTML += `<option value="${set.id}">Set ${set.setCode}</option>`;
+            });
+
+            document.getElementById('answerGridContainer').style.display = 'none';
+        }
+
+        // ==================== UI UPDATE FUNCTIONS ====================
+        function updateUI() {
+            updateExamsTab();
+            updateShiftsTab();
+            updateSetsTab();
+            updateKeysTab();
+            document.getElementById('liveCount').textContent = `Total Exams: ${examData.exams.length}`;
+        }
+
+        function updateExamsTab() {
+            const container = document.getElementById('examsTab');
+            container.innerHTML = '';
+            
+            examData.exams.forEach(exam => {
+                container.innerHTML += `
+                    <div class="data-card">
+                        <div class="data-header">
+                            <span class="data-title">📘 ${exam.name}</span>
+                            <span class="data-meta">📅 ${exam.date}</span>
+                        </div>
+                        <div>
+                            <span class="set-badge">📊 ${exam.totalQuestions} Questions</span>
+                            <span class="set-badge">⏰ ${exam.totalShifts} Shifts</span>
+                        </div>
+                    </div>
+                `;
+            });
+        }
+
+        function updateShiftsTab() {
+            const container = document.getElementById('shiftsTab');
+            container.innerHTML = '';
+            
+            examData.shifts.forEach(shift => {
+                const exam = examData.exams.find(e => e.id === shift.examId);
+                container.innerHTML += `
+                    <div class="data-card">
+                        <div class="data-header">
+                            <span class="data-title">⏰ Shift ${shift.shiftNumber}</span>
+                            <span class="data-meta">${shift.time}</span>
+                        </div>
+                        <div>
+                            <span class="set-badge">📚 ${exam?.name || 'Unknown'}</span>
+                        </div>
+                    </div>
+                `;
+            });
+        }
+
+        function updateSetsTab() {
+            const container = document.getElementById('setsTab');
+            container.innerHTML = '';
+            
+            const shifts = [...new Set(examData.sets.map(s => s.shiftId))];
+            
+            shifts.forEach(shiftId => {
+                const shift = examData.shifts.find(s => s.id === shiftId);
+                const exam = examData.exams.find(e => e.id === shift?.examId);
+                const sets = examData.sets.filter(s => s.shiftId === shiftId);
+                
+                container.innerHTML += `
+                    <div class="data-card">
+                        <div class="data-header">
+                            <span class="data-title">📋 ${exam?.name} - Shift ${shift?.shiftNumber}</span>
+                            <span class="data-meta">${shift?.time}</span>
+                        </div>
+                        <div>
+                            ${sets.map(set => `<span class="set-badge">Set ${set.setCode}</span>`).join('')}
+                        </div>
+                    </div>
+                `;
+            });
+        }
+
+        function updateKeysTab() {
+            const container = document.getElementById('keysTab');
+            container.innerHTML = '';
+            
+            examData.answerKeys.forEach(key => {
+                const set = examData.sets.find(s => s.id === key.setId);
+                const shift = examData.shifts.find(s => s.id === set?.shiftId);
+                const exam = examData.exams.find(e => e.id === shift?.examId);
+                
+                const answeredCount = key.answers.filter(a => a !== '').length;
+                const totalQuestions = exam?.totalQuestions || key.answers.length;
+                
+                container.innerHTML += `
+                    <div class="data-card" onclick="viewAnswers('${key.id}')">
+                        <div class="data-header">
+                            <span class="data-title">🔑 ${exam?.name} - Shift ${shift?.shiftNumber} (Set ${set?.setCode})</span>
+                            <span class="data-meta">${answeredCount}/${totalQuestions} Answered</span>
+                        </div>
+                        <div style="display: flex; gap: 5px; flex-wrap: wrap;">
+                            ${key.answers.slice(0, 15).map((a, i) => `
+                                <span class="set-badge" style="background: ${a ? '#667eea' : '#ccc'}">${i+1}:${a || '-'}</span>
+                            `).join('')}
+                            ${key.answers.length > 15 ? '...' : ''}
+                        </div>
+                    </div>
+                `;
+            });
+        }
+
+        function viewAnswers(keyId) {
+            const key = examData.answerKeys.find(k => k.id === keyId);
+            const set = examData.sets.find(s => s.id === key.setId);
+            const shift = examData.shifts.find(s => s.id === set?.shiftId);
+            const exam = examData.exams.find(e => e.id === shift?.examId);
+            
+            document.getElementById('modalTitle').textContent = 
+                `${exam?.name} - Shift ${shift?.shiftNumber} (Set ${set?.setCode})`;
+            
+            let html = '';
+            key.answers.forEach((ans, i) => {
+                html += `
+                    <div style="text-align: center; padding: 8px; background: ${ans ? '#f0f0f0' : '#ffe0e0'}; border-radius: 5px;">
+                        <div style="font-size: 0.7em;">Q${i+1}</div>
+                        <div style="font-weight: bold; color: ${ans ? '#667eea' : '#999'};">${ans || '-'}</div>
+                    </div>
+                `;
+            });
+            
+            document.getElementById('modalAnswers').innerHTML = html;
+            document.getElementById('answerModal').classList.add('active');
+        }
+
+        function closeModal() {
+            document.getElementById('answerModal').classList.remove('active');
+        }
+
+        function switchTab(tab) {
+            document.getElementById('examsTab').style.display = 'none';
+            document.getElementById('shiftsTab').style.display = 'none';
+            document.getElementById('setsTab').style.display = 'none';
+            document.getElementById('keysTab').style.display = 'none';
+            
+            document.getElementById(tab + 'Tab').style.display = 'block';
+            
+            document.querySelectorAll('.tab').forEach(t => t.classList.remove('active'));
+            event.target.classList.add('active');
+        }
+
+        function showSuccess() {
+            const msg = document.getElementById('successMessage');
+            msg.classList.add('show');
+            setTimeout(() => msg.classList.remove('show'), 3000);
+        }
+
+        // Initialize on load
+        window.onload = function() {
+            loadData();
+            const today = new Date().toISOString().split('T')[0];
+            document.getElementById('examDate').value = today;
+        };
+    </script>
+</body>
+</html>

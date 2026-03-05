@@ -1,0 +1,789 @@
+<!DOCTYPE html>
+<html lang="hi">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Student Portal - Dynamic Questions</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+        }
+
+        body {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            min-height: 100vh;
+            padding: 20px;
+        }
+
+        .container {
+            max-width: 1200px;
+            margin: 0 auto;
+        }
+
+        .header {
+            background: white;
+            border-radius: 20px 20px 0 0;
+            padding: 30px;
+            text-align: center;
+            box-shadow: 0 10px 30px rgba(0,0,0,0.2);
+        }
+
+        .header h1 {
+            font-size: 2.5em;
+            background: linear-gradient(135deg, #667eea, #764ba2);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            margin-bottom: 10px;
+        }
+
+        .header p {
+            color: #666;
+            font-size: 1.1em;
+        }
+
+        .main-card {
+            background: white;
+            border-radius: 0 0 20px 20px;
+            padding: 30px;
+            box-shadow: 0 10px 30px rgba(0,0,0,0.2);
+        }
+
+        .progress-steps {
+            display: flex;
+            justify-content: space-between;
+            margin: 30px 0;
+            position: relative;
+        }
+
+        .progress-steps::before {
+            content: '';
+            position: absolute;
+            top: 50%;
+            left: 0;
+            right: 0;
+            height: 3px;
+            background: #e0e0e0;
+            transform: translateY(-50%);
+            z-index: 1;
+        }
+
+        .step {
+            width: 50px;
+            height: 50px;
+            background: white;
+            border: 3px solid #e0e0e0;
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-weight: bold;
+            color: #999;
+            position: relative;
+            z-index: 2;
+            transition: all 0.3s;
+        }
+
+        .step.active {
+            border-color: #667eea;
+            color: #667eea;
+            transform: scale(1.1);
+        }
+
+        .step.completed {
+            background: #667eea;
+            border-color: #667eea;
+            color: white;
+        }
+
+        .step-label {
+            position: absolute;
+            top: 60px;
+            left: 50%;
+            transform: translateX(-50%);
+            font-size: 12px;
+            color: #666;
+            white-space: nowrap;
+        }
+
+        .selection-section {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+            gap: 20px;
+            margin-bottom: 30px;
+            padding: 20px;
+            background: #f8f9fa;
+            border-radius: 15px;
+        }
+
+        .select-group {
+            position: relative;
+        }
+
+        .select-group label {
+            display: block;
+            margin-bottom: 8px;
+            font-weight: 600;
+            color: #555;
+        }
+
+        .select-group select {
+            width: 100%;
+            padding: 12px;
+            border: 2px solid #e0e0e0;
+            border-radius: 10px;
+            font-size: 16px;
+            transition: all 0.3s;
+            background: white;
+        }
+
+        .select-group select:focus {
+            border-color: #667eea;
+            outline: none;
+        }
+
+        .select-group select:disabled {
+            background: #f0f0f0;
+            cursor: not-allowed;
+        }
+
+        .answers-section {
+            margin: 30px 0;
+            display: none;
+        }
+
+        .answers-section.active {
+            display: block;
+            animation: fadeIn 0.5s;
+        }
+
+        @keyframes fadeIn {
+            from { opacity: 0; transform: translateY(20px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+
+        .answers-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 20px;
+            padding: 15px;
+            background: linear-gradient(135deg, #667eea10, #764ba210);
+            border-radius: 10px;
+        }
+
+        .answers-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(100px, 1fr));
+            gap: 15px;
+            background: #f8f9fa;
+            padding: 25px;
+            border-radius: 15px;
+            max-height: 500px;
+            overflow-y: auto;
+        }
+
+        .answer-item {
+            background: white;
+            border-radius: 10px;
+            padding: 12px;
+            text-align: center;
+            box-shadow: 0 2px 10px rgba(0,0,0,0.05);
+        }
+
+        .answer-item label {
+            display: block;
+            font-size: 0.85em;
+            color: #666;
+            margin-bottom: 8px;
+            font-weight: 600;
+        }
+
+        .answer-item select {
+            width: 100%;
+            padding: 8px;
+            border: 2px solid #e0e0e0;
+            border-radius: 8px;
+            font-size: 14px;
+            font-weight: bold;
+            background: white;
+            cursor: pointer;
+        }
+
+        .check-btn {
+            background: linear-gradient(135deg, #667eea, #764ba2);
+            color: white;
+            border: none;
+            padding: 18px 40px;
+            border-radius: 50px;
+            font-size: 1.2em;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.3s;
+            width: 100%;
+            margin: 20px 0;
+        }
+
+        .check-btn:hover:not(:disabled) {
+            transform: translateY(-3px);
+            box-shadow: 0 15px 40px rgba(102,126,234,0.4);
+        }
+
+        .check-btn:disabled {
+            opacity: 0.5;
+            cursor: not-allowed;
+        }
+
+        /* Result Card - Updated without Total Marks */
+        .result-card {
+            background: linear-gradient(135deg, #f5f7fa 0%, #e9ecf1 100%);
+            border-radius: 20px;
+            padding: 30px;
+            margin-top: 30px;
+            border: 3px solid #667eea;
+            display: none;
+        }
+
+        .result-card.show {
+            display: block;
+            animation: slideUp 0.5s ease;
+        }
+
+        @keyframes slideUp {
+            from { opacity: 0; transform: translateY(30px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+
+        /* New Stats Layout - Without Total Marks */
+        .result-stats {
+            display: grid;
+            grid-template-columns: repeat(2, 1fr);
+            gap: 20px;
+            margin: 20px 0;
+        }
+
+        .stat-card {
+            background: white;
+            border-radius: 15px;
+            padding: 20px;
+            text-align: center;
+            box-shadow: 0 5px 15px rgba(0,0,0,0.1);
+        }
+
+        .stat-value {
+            font-size: 2.5em;
+            font-weight: bold;
+            line-height: 1.2;
+            color: #667eea;
+        }
+
+        .stat-label {
+            color: #666;
+            font-size: 0.9em;
+            margin-top: 5px;
+        }
+
+        /* Count Badges */
+        .count-badge {
+            display: inline-block;
+            padding: 8px 20px;
+            border-radius: 50px;
+            font-size: 1.1em;
+            font-weight: 600;
+            margin: 0 5px;
+        }
+
+        .count-badge.correct {
+            background: #d4edda;
+            color: #28a745;
+        }
+
+        .count-badge.wrong {
+            background: #f8d7da;
+            color: #dc3545;
+        }
+
+        .count-badge.unattempted {
+            background: #fff3cd;
+            color: #ffc107;
+        }
+
+        .match-details {
+            display: grid;
+            grid-template-columns: repeat(2, 1fr);
+            gap: 15px;
+            margin: 20px 0;
+        }
+
+        .match-item {
+            padding: 15px;
+            background: white;
+            border-radius: 10px;
+            text-align: center;
+        }
+
+        .match-item .label {
+            color: #666;
+            font-size: 0.9em;
+            margin-bottom: 5px;
+        }
+
+        .match-item .value {
+            font-size: 1.3em;
+            font-weight: bold;
+            color: #667eea;
+        }
+
+        .comparison-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(80px, 1fr));
+            gap: 10px;
+            margin-top: 20px;
+            max-height: 400px;
+            overflow-y: auto;
+        }
+
+        .comparison-item {
+            padding: 10px;
+            border-radius: 8px;
+            text-align: center;
+            font-size: 0.9em;
+        }
+
+        .comparison-item.correct {
+            background: #d4edda;
+            border-left: 3px solid #28a745;
+        }
+
+        .comparison-item.incorrect {
+            background: #f8d7da;
+            border-left: 3px solid #dc3545;
+        }
+
+        .comparison-item.unattempted {
+            background: #fff3cd;
+            border-left: 3px solid #ffc107;
+        }
+
+        .loading-overlay {
+            position: fixed;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            background: rgba(255,255,255,0.9);
+            display: none;
+            justify-content: center;
+            align-items: center;
+            z-index: 1000;
+        }
+
+        .loading-overlay.show {
+            display: flex;
+        }
+
+        .spinner {
+            width: 60px;
+            height: 60px;
+            border: 6px solid #f3f3f3;
+            border-top: 6px solid #667eea;
+            border-radius: 50%;
+            animation: spin 1s linear infinite;
+        }
+
+        @keyframes spin {
+            0% { transform: rotate(0deg); }
+            100% { transform: rotate(360deg); }
+        }
+
+        .new-check {
+            background: #f0f0f0;
+            color: #333;
+            border: none;
+            padding: 15px 30px;
+            border-radius: 50px;
+            font-size: 1.1em;
+            cursor: pointer;
+            width: 100%;
+            margin-top: 20px;
+            transition: all 0.3s;
+        }
+
+        .new-check:hover {
+            background: #e0e0e0;
+        }
+
+        .summary-row {
+            display: flex;
+            justify-content: center;
+            gap: 15px;
+            margin: 25px 0;
+            flex-wrap: wrap;
+        }
+
+        h2 {
+            color: #333;
+            text-align: center;
+        }
+
+        h3 {
+            color: #333;
+            margin: 20px 0 10px 0;
+        }
+    </style>
+</head>
+<body>
+    <div class="loading-overlay" id="loadingOverlay">
+        <div class="spinner"></div>
+    </div>
+
+    <div class="container">
+        <div class="header">
+            <h1>📝 Student Exam Checker</h1>
+            <p>अपना Exam और Shift चुनें - सही/गलत की गिनती देखें</p>
+        </div>
+
+        <div class="main-card">
+            <!-- Progress Steps -->
+            <div class="progress-steps">
+                <div class="step active" id="step1">1<span class="step-label">Exam</span></div>
+                <div class="step" id="step2">2<span class="step-label">Shift</span></div>
+                <div class="step" id="step3">3<span class="step-label">Answers</span></div>
+                <div class="step" id="step4">4<span class="step-label">Result</span></div>
+            </div>
+
+            <!-- Selection Section -->
+            <div class="selection-section">
+                <div class="select-group">
+                    <label>📚 परीक्षा चुनें:</label>
+                    <select id="examSelect" onchange="onExamChange()">
+                        <option value="">-- Select Exam --</option>
+                    </select>
+                </div>
+
+                <div class="select-group">
+                    <label>⏰ Shift चुनें:</label>
+                    <select id="shiftSelect" onchange="onShiftChange()" disabled>
+                        <option value="">-- First select exam --</option>
+                    </select>
+                </div>
+            </div>
+
+            <!-- Answers Section -->
+            <div class="answers-section" id="answersSection">
+                <div class="answers-header">
+                    <h3>✏️ अपने Answers चुनें</h3>
+                    <span id="questionCount">0 Questions</span>
+                </div>
+
+                <div class="answers-grid" id="answersGrid"></div>
+
+                <button class="check-btn" id="checkBtn" onclick="checkAnswers()">
+                    🔍 मेरा Result देखें
+                </button>
+            </div>
+
+            <!-- Result Card - Without Total Marks -->
+            <div class="result-card" id="resultCard">
+                <h2>🎉 आपका परिणाम</h2>
+                
+                <!-- Stats: Accuracy and Rank Only -->
+                <div class="result-stats">
+                    <div class="stat-card">
+                        <div class="stat-value" id="accuracy">0%</div>
+                        <div class="stat-label">सटीकता</div>
+                    </div>
+                    <div class="stat-card">
+                        <div class="stat-value" id="rank">#0</div>
+                        <div class="stat-label">रैंक</div>
+                    </div>
+                </div>
+
+                <!-- Correct/Wrong/Unattempted Count -->
+                <div class="summary-row">
+                    <span class="count-badge correct" id="correctCount">✅ सही: 0</span>
+                    <span class="count-badge wrong" id="wrongCount">❌ गलत: 0</span>
+                    <span class="count-badge unattempted" id="unattemptedCount">⭕ छोड़े: 0</span>
+                </div>
+
+                <!-- Match Details -->
+                <div class="match-details">
+                    <div class="match-item">
+                        <div class="label">⏰ Shift</div>
+                        <div class="value" id="matchedShift">--</div>
+                    </div>
+                    <div class="match-item">
+                        <div class="label">📋 Set</div>
+                        <div class="value" id="matchedSet">--</div>
+                    </div>
+                    <div class="match-item">
+                        <div class="label">✅ सही Answers</div>
+                        <div class="value" id="correctCountValue">0</div>
+                    </div>
+                    <div class="match-item">
+                        <div class="label">📊 Match %</div>
+                        <div class="value" id="matchPercent">0%</div>
+                    </div>
+                </div>
+
+                <!-- Question-wise Comparison -->
+                <h3>📊 सवाल-वार तुलना</h3>
+                <div class="comparison-grid" id="comparisonGrid"></div>
+
+                <button class="new-check" onclick="resetForNewCheck()">
+                    🔄 नया Check करें
+                </button>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        let examData = { exams: [], shifts: [], sets: [], answerKeys: [] };
+        let selectedExam = null;
+        let selectedShift = null;
+        let totalQuestions = 0;
+
+        function loadData() {
+            const saved = localStorage.getItem('examData');
+            if (saved) {
+                examData = JSON.parse(saved);
+            }
+            updateExamDropdown();
+        }
+
+        function updateExamDropdown() {
+            const select = document.getElementById('examSelect');
+            select.innerHTML = '<option value="">-- Select Exam --</option>';
+            
+            examData.exams.forEach(exam => {
+                select.innerHTML += `<option value="${exam.id}">${exam.name} (${exam.totalQuestions} Q)</option>`;
+            });
+        }
+
+        function onExamChange() {
+            const examId = document.getElementById('examSelect').value;
+            if (!examId) {
+                document.getElementById('shiftSelect').disabled = true;
+                document.getElementById('answersSection').classList.remove('active');
+                updateProgressSteps(1);
+                return;
+            }
+
+            selectedExam = examData.exams.find(e => e.id === examId);
+            totalQuestions = selectedExam.totalQuestions;
+            
+            document.getElementById('questionCount').textContent = totalQuestions + ' Questions';
+            
+            const shiftSelect = document.getElementById('shiftSelect');
+            shiftSelect.innerHTML = '<option value="">-- Select Shift --</option>';
+            shiftSelect.disabled = false;
+
+            const shifts = examData.shifts.filter(s => s.examId === examId);
+            shifts.sort((a, b) => a.shiftNumber - b.shiftNumber);
+            
+            shifts.forEach(shift => {
+                shiftSelect.innerHTML += `<option value="${shift.id}">Shift ${shift.shiftNumber}</option>`;
+            });
+
+            updateProgressSteps(2);
+        }
+
+        function onShiftChange() {
+            const shiftId = document.getElementById('shiftSelect').value;
+            if (!shiftId) return;
+
+            selectedShift = examData.shifts.find(s => s.id === shiftId);
+            generateAnswerGrid();
+            document.getElementById('answersSection').classList.add('active');
+            updateProgressSteps(3);
+        }
+
+        function generateAnswerGrid() {
+            const grid = document.getElementById('answersGrid');
+            grid.innerHTML = '';
+            grid.style.gridTemplateColumns = `repeat(${Math.min(5, totalQuestions)}, 1fr)`;
+            
+            for (let i = 1; i <= totalQuestions; i++) {
+                const item = document.createElement('div');
+                item.className = 'answer-item';
+                item.innerHTML = `
+                    <label>Q${i}</label>
+                    <select id="q${i}">
+                        <option value="">-</option>
+                        <option value="A">A</option>
+                        <option value="B">B</option>
+                        <option value="C">C</option>
+                        <option value="D">D</option>
+                    </select>
+                `;
+                grid.appendChild(item);
+            }
+        }
+
+        function checkAnswers() {
+            document.getElementById('loadingOverlay').classList.add('show');
+            
+            const studentAnswers = [];
+            for (let i = 1; i <= totalQuestions; i++) {
+                const select = document.getElementById(`q${i}`);
+                studentAnswers.push(select.value || '');
+            }
+
+            setTimeout(() => {
+                const result = findBestMatch(studentAnswers);
+                displayResults(studentAnswers, result);
+                document.getElementById('loadingOverlay').classList.remove('show');
+                document.getElementById('resultCard').classList.add('show');
+                updateProgressSteps(4);
+            }, 1500);
+        }
+
+        function findBestMatch(studentAnswers) {
+            let bestMatch = {
+                shiftId: null,
+                setCode: null,
+                correctCount: 0,
+                matchPercent: 0,
+                shiftNumber: selectedShift?.shiftNumber
+            };
+
+            const shiftSets = examData.sets.filter(s => s.shiftId === selectedShift.id);
+            
+            shiftSets.forEach(set => {
+                const answerKey = examData.answerKeys.find(k => k.setId === set.id);
+                if (!answerKey || !answerKey.answers) return;
+
+                let correct = 0;
+                for (let i = 0; i < totalQuestions; i++) {
+                    if (studentAnswers[i] && answerKey.answers[i] && 
+                        studentAnswers[i] === answerKey.answers[i]) {
+                        correct++;
+                    }
+             }
+
+                const percent = (correct / totalQuestions) * 100;
+                
+                if (percent > bestMatch.matchPercent) {
+                    bestMatch = {
+                        shiftId: set.shiftId,
+                        setCode: set.setCode,
+                        correctCount: correct,
+                        matchPercent: percent,
+                        shiftNumber: selectedShift.shiftNumber
+                    };
+                }
+            });
+
+            return bestMatch;
+        }
+
+        // Updated displayResults without total marks
+        function displayResults(studentAnswers, result) {
+            const accuracy = result.matchPercent.toFixed(1);
+            const rank = calculateRank(result.matchPercent);
+
+            // Get answer key for matched set
+            const matchedSet = examData.sets.find(s => 
+                s.shiftId === result.shiftId && s.setCode === result.setCode
+            );
+            const answerKey = examData.answerKeys.find(k => k.setId === matchedSet?.id);
+
+            // Calculate correct, wrong, unattempted
+            let correct = 0;
+            let wrong = 0;
+            let unattempted = 0;
+            const comparisonItems = [];
+
+            for (let i = 0; i < totalQuestions; i++) {
+                const studentAns = studentAnswers[i];
+                const correctAns = answerKey?.answers[i];
+                
+                if (!studentAns) {
+                    unattempted++;
+                    comparisonItems.push({ status: 'unattempted', student: '-', correct: correctAns });
+                } else if (studentAns === correctAns) {
+                    correct++;
+                    comparisonItems.push({ status: 'correct', student: studentAns, correct: correctAns });
+                } else {
+                    wrong++;
+                    comparisonItems.push({ status: 'incorrect', student: studentAns, correct: correctAns });
+                }
+            }
+
+            // Update stats (no total marks)
+            document.getElementById('accuracy').textContent = accuracy + '%';
+            document.getElementById('rank').textContent = '#' + rank;
+            
+            // Update correct/wrong/unattempted badges
+            document.getElementById('correctCount').innerHTML = `✅ सही: ${correct}`;
+            document.getElementById('wrongCount').innerHTML = `❌ गलत: ${wrong}`;
+            document.getElementById('unattemptedCount').innerHTML = `⭕ छोड़े: ${unattempted}`;
+            
+            // Update match details
+            document.getElementById('matchedShift').textContent = 'Shift ' + result.shiftNumber;
+            document.getElementById('matchedSet').textContent = 'Set ' + result.setCode;
+            document.getElementById('correctCountValue').textContent = result.correctCount;
+            document.getElementById('matchPercent').textContent = result.matchPercent.toFixed(1) + '%';
+
+            // Show comparison grid
+            const comparisonGrid = document.getElementById('comparisonGrid');
+            comparisonGrid.innerHTML = '';
+            
+            comparisonItems.forEach((item, i) => {
+                const div = document.createElement('div');
+                div.className = `comparison-item ${item.status}`;
+                
+                let html = `<div>Q${i+1}</div>`;
+                html += `<div><strong>${item.student}</strong></div>`;
+                
+                if (item.status === 'incorrect') {
+                    html += `<div style="font-size:0.8em;">(✓ ${item.correct})</div>`;
+                } else if (item.status === 'unattempted' && item.correct) {
+                    html += `<div style="font-size:0.8em;">(✓ ${item.correct})</div>`;
+                }
+                
+                div.innerHTML = html;
+                comparisonGrid.appendChild(div);
+            });
+        }
+
+        function calculateRank(percent) {
+            if (percent >= 90) return Math.floor(Math.random() * 100) + 1;
+            if (percent >= 75) return Math.floor(Math.random() * 500) + 101;
+            if (percent >= 60) return Math.floor(Math.random() * 1000) + 601;
+            if (percent >= 40) return Math.floor(Math.random() * 2000) + 1601;
+            return Math.floor(Math.random() * 3000) + 3601;
+        }
+
+        function updateProgressSteps(step) {
+            for (let i = 1; i <= 4; i++) {
+                const el = document.getElementById(`step${i}`);
+                if (i < step) {
+                    el.classList.add('completed');
+                    el.classList.remove('active');
+                } else if (i === step) {
+                    el.classList.add('active');
+                    el.classList.remove('completed');
+                } else {
+                    el.classList.remove('active', 'completed');
+                }
+            }
+        }
+
+        function resetForNewCheck() {
+            document.getElementById('resultCard').classList.remove('show');
+            document.getElementById('answersSection').classList.remove('active');
+            document.getElementById('examSelect').value = '';
+            document.getElementById('shiftSelect').innerHTML = '<option value="">-- First select exam --</option>';
+            document.getElementById('shiftSelect').disabled = true;
+            updateProgressSteps(1);
+        }
+
+        window.onload = function() {
+            loadData();
+        };
+    </script>
+</body>
+</html>
